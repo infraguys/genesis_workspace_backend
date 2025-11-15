@@ -1,0 +1,17 @@
+{
+    "project": {
+        "name": "Genesis Workspace",
+        "package_name": "workspace",
+        "description": "The Backend server for Genesis Workspace",
+        "summary": "The Backend server for Genesis Workspace"
+    },
+    "author": {
+        "name": "Genesis Corporation",
+        "email": "eugene@frolov.net.ru"
+    },
+    "template_info": {
+        "name": "py_element",
+        "version": "1.0.0",
+        "template_file_name": "py_element.settings.json"
+    }
+}
