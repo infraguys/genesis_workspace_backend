@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from gcl_iam import middlewares as iam_mw
 from restalchemy.api import applications
 from restalchemy.api.middlewares import logging as logging_mw
 from restalchemy.api import middlewares
@@ -23,15 +22,10 @@ from restalchemy.openapi import structures as openapi_structures
 from restalchemy.openapi import engines as openapi_engines
 
 from workspace.common.api.middlewares import errors as errors_mw
+from workspace.common.api.middlewares import user_context as user_context_mw
 from workspace.user_api.api import routes as app_routes
 from workspace.user_api.api import versions
 from workspace import version as app_version
-
-
-skip_auth_endpoints = [
-    iam_mw.EndpointComparator("/"),
-    iam_mw.EndpointComparator("/v1/"),
-]
 
 
 class UserApiApp(routes.RootRoute):
@@ -55,9 +49,7 @@ def get_openapi_engine():
         info=openapi_structures.OpenApiInfo(
             title=f"Workspace {versions.API_VERSION_1_0} User API",
             version=app_version.version_info.release_string(),
-            description=(
-                f"OpenAPI - Workspace {versions.API_VERSION_1_0}"
-            ),
+            description=(f"OpenAPI - Workspace {versions.API_VERSION_1_0}"),
         ),
         paths=openapi_structures.OpenApiPaths(),
         components=openapi_structures.OpenApiComponents(),
@@ -65,19 +57,14 @@ def get_openapi_engine():
     return openapi_engine
 
 
-def build_wsgi_application(token_algorithm, iam_engine_driver=None):
+def build_wsgi_application():
     return middlewares.attach_middlewares(
         applications.OpenApiApplication(
             route_class=get_api_application(),
             openapi_engine=get_openapi_engine(),
         ),
         [
-            middlewares.configure_middleware(
-                iam_mw.GenesisCoreAuthMiddleware,
-                token_algorithm=token_algorithm,
-                iam_engine_driver=iam_engine_driver,
-                skip_auth_endpoints=skip_auth_endpoints,
-            ),
+            user_context_mw.UserContextMiddleware,
             errors_mw.ErrorsHandlerMiddleware,
             logging_mw.LoggingMiddleware,
         ],

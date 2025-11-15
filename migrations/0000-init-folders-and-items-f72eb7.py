@@ -34,24 +34,43 @@ class MigrationStep(migrations.AbstarctMigrationStep):
     def upgrade(self, session):
         expressions = [
             """
-            CREATE TABLE IF NOT EXISTS "examples" (
+            CREATE TABLE IF NOT EXISTS "folders" (
                 "uuid" UUID PRIMARY KEY,
-                status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
-                    CHECK (status IN ('ACTIVE')),
-                "name" VARCHAR(256) NOT NULL,
-                "description" VARCHAR(256) NOT NULL,
-                "project_id" UUID NOT NULL,
+                "title" VARCHAR(64) NOT NULL,
+                "user_id" INTEGER NOT NULL,
+                "background_color_value" BIGINT NULL,
+                "unread_messages" JSONB[] NOT NULL,
+                "system_type" VARCHAR(16) NULL
+                    CHECK (system_type IN ('all', 'created')),
                 "created_at" TIMESTAMP(6) NOT NULL DEFAULT NOW(),
                 "updated_at" TIMESTAMP(6) NOT NULL DEFAULT NOW()
             );
             """,
             """
-            CREATE INDEX "examples_name_idx" ON "examples" ("name");
+            CREATE INDEX "folders_title_idx" ON "folders" ("title");
             """,
             """
-            CREATE INDEX "examples_project_id_idx" ON "examples" (
-                "project_id"
+            CREATE TABLE IF NOT EXISTS "folder_items" (
+                "uuid" UUID PRIMARY KEY,
+                "folder" UUID NOT NULL,
+                "user_id" INTEGER NOT NULL,
+                "chat_id" INTEGER NOT NULL,
+                "order_index" INTEGER NULL,
+                "pinned_at" TIMESTAMP(6) NULL,
+                "created_at" TIMESTAMP(6) NOT NULL DEFAULT NOW(),
+                "updated_at" TIMESTAMP(6) NOT NULL DEFAULT NOW(),
+                CONSTRAINT "folder_items_folder_uuid_fkey"
+                    FOREIGN KEY ("folder") REFERENCES "folders" ("uuid")
+                    ON DELETE CASCADE
             );
+            """,
+            """
+            CREATE INDEX "folder_items_folder_idx"
+                ON "folder_items" ("folder");
+            """,
+            """
+            CREATE UNIQUE INDEX "chat_id_folder_idx"
+                ON "folder_items" ("chat_id", "folder");
             """,
         ]
 
@@ -59,7 +78,7 @@ class MigrationStep(migrations.AbstarctMigrationStep):
             session.execute(expression)
 
     def downgrade(self, session):
-        tables = ["examples"]
+        tables = ["folder_items", "folders"]
 
         for table in tables:
             self._delete_table_if_exists(session, table)

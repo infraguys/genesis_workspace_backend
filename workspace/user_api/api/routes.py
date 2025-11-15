@@ -19,8 +19,40 @@ from restalchemy.api import routes
 from workspace.user_api.api import controllers
 
 
-class ExampleRoute(routes.Route):
-    __controller__ = controllers.ExampleController
+class FolderItemPinAction(routes.Action):
+    __controller__ = controllers.FolderItemController
+
+
+class FolderItemUnpinAction(routes.Action):
+    __controller__ = controllers.FolderItemController
+
+
+class FolderItemRoute(routes.Route):
+    __controller__ = controllers.FolderItemController
+    __allow_methods__ = [
+        routes.CREATE,
+        routes.FILTER,
+        routes.GET,
+        routes.UPDATE,
+        routes.DELETE,
+    ]
+
+    pin = routes.action(FolderItemPinAction, invoke=True)
+    unpin = routes.action(FolderItemUnpinAction, invoke=True)
+
+
+class FolderRoute(routes.Route):
+    __controller__ = controllers.FolderController
+    __allow_methods__ = [
+        routes.CREATE,
+        routes.FILTER,
+        routes.GET,
+        routes.UPDATE,
+        routes.DELETE,
+    ]
+
+    # nested route: /v1/folders/<folder_uuid>/items/[<uuid>]
+    items = routes.route(FolderItemRoute, resource_route=True)
 
 
 class ApiEndpointRoute(routes.Route):
@@ -29,5 +61,5 @@ class ApiEndpointRoute(routes.Route):
     __controller__ = controllers.ApiEndpointController
     __allow_methods__ = [routes.FILTER]
 
-    # route to /v1.0/examples/[<uuid>]
-    examples = routes.route(ExampleRoute)
+    # route to /v1.0/folders/[<uuid>]
+    folders = routes.route(FolderRoute)

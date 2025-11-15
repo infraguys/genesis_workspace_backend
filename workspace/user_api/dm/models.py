@@ -16,28 +16,92 @@
 
 import enum
 
+from restalchemy.dm import filters as dm_filters
 from restalchemy.dm import models
 from restalchemy.dm import properties
+from restalchemy.dm import relationships
 from restalchemy.dm import types
 from restalchemy.storage.sql import orm
 
 
-class AlwaysActiveStatus(str, enum.Enum):
-    ACTIVE = "ACTIVE"
+class SystemFolderType(str, enum.Enum):
+    ALL = "all"
+    CREATED = "created"
 
 
-class ExampleModel(
+class Folder(
     models.ModelWithUUID,
-    models.ModelWithNameDesc,
-    models.ModelWithProject,
     models.ModelWithTimestamp,
     orm.SQLStorableMixin,
 ):
-    __tablename__ = "examples"
+    __tablename__ = "folders"
 
-    STATUS = AlwaysActiveStatus
-
-    status = properties.property(
-        types.Enum([status.value for status in STATUS]),
-        default=STATUS.ACTIVE.value,
+    title = properties.property(
+        types.String(min_length=3, max_length=64),
+        required=True,
     )
+    user_id = properties.property(
+        types.Integer(min_value=0, max_value=2**31 - 1),
+        required=True,
+    )
+    background_color_value = properties.property(
+        types.AllowNone(types.Integer(min_value=0, max_value=2**32 - 1)),
+        default=None,
+    )
+    unread_messages = properties.property(
+        types.TypedList(types.Integer(min_value=0, max_value=2**31 - 1)),
+        default=list,
+    )
+    system_type = properties.property(
+        types.AllowNone(
+            types.Enum([folder_type.value for folder_type in SystemFolderType])
+        ),
+        default=None,
+    )
+
+
+class FolderItem(
+    models.CustomPropertiesMixin,
+    models.ModelWithUUID,
+    models.ModelWithTimestamp,
+    orm.SQLStorableMixin,
+):
+    __tablename__ = "folder_items"
+    __custom_properties__ = {
+        "folder_uuid": types.UUID(),
+    }
+
+    folder = relationships.relationship(Folder, required=True)
+    user_id = properties.property(
+        types.Integer(min_value=0, max_value=2**31 - 1),
+        required=True,
+    )
+    chat_id = properties.property(
+        types.Integer(min_value=0, max_value=2**31 - 1),
+        required=True,
+    )
+    order_index = properties.property(
+        types.AllowNone(types.Integer(max_value=2**31 - 1)),
+        default=None,
+    )
+    pinned_at = properties.property(
+        types.AllowNone(types.UTCDateTimeZ()),
+        default=None,
+    )
+
+    @property
+    def folder_uuid(self):
+        return self.folder.uuid
+
+    @folder_uuid.setter
+    def folder_uuid(self, value):
+        if value is None:
+            raise ValueError("folder_uuid must not be None")
+
+        folder_id = types.UUID().from_simple_type(value)
+        self.folder = Folder.objects.get_one(
+            filters={
+                "uuid": dm_filters.EQ(folder_id),
+                "user_id": dm_filters.EQ(self.user_id),
+            },
+        )
