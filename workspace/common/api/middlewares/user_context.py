@@ -31,12 +31,14 @@ class UserContextMiddleware(ra_middlewares.Middleware):
         # If context already exists, do not override it and do not call Zulip
         if hasattr(req, "context") and req.context is not None:
             return None
-        
+
         if req.path in self.EXCLUDE_PATHS:
             return None
 
         # Build Zulip endpoint on the same domain as the incoming request
-        base_url = req.host_url.rstrip("/")
+        base_url = (
+            f"{req.headers['X-Forwarded-Proto']}://{req.headers['Host']}"
+        )
         client = zulip_client.ZulipClient(endpoint=base_url, timeout=3)
 
         headers = {}
