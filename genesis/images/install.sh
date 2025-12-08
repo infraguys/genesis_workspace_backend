@@ -61,14 +61,10 @@ ra-apply-migration --config-dir "$GC_PATH/etc/workspace/" --path "$GC_PATH/migra
 deactivate
 
 # Create links to venv
-sudo ln -sf "$VENV_PATH/bin/workspace-builder-agent" "/usr/bin/workspace-builder-agent"
 sudo ln -sf "$VENV_PATH/bin/workspace-user-api" "/usr/bin/workspace-user-api"
 
 # Install Systemd service files
-sudo cp "$GC_PATH/etc/systemd/workspace-builder-agent.service" $SYSTEMD_SERVICE_DIR
 sudo cp "$GC_PATH/etc/systemd/workspace-user-api.service" $SYSTEMD_SERVICE_DIR
 
 # Enable workspace services
-sudo systemctl enable \
-    workspace-builder-agent \
-    workspace-user-api
+sudo systemctl enable workspace-user-api
