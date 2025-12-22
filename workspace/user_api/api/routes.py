@@ -71,5 +71,5 @@ class ApiEndpointRoute(routes.Route):
     # route to /v1.0/folders/[<uuid>]
     folders = routes.route(FolderRoute)
 
-    # route to /v1.0/folder_items/[<uuid>]
+    # route to /v1.0/folder_items/
     folder_items = routes.route(FolderItemsRoute)

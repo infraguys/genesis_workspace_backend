@@ -56,7 +56,7 @@ class Folder(
         types.AllowNone(
             types.Enum([folder_type.value for folder_type in SystemFolderType])
         ),
-        default=None,
+        default=SystemFolderType.CREATED,
     )
 
 
