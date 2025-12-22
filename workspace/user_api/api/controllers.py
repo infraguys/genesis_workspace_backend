@@ -175,3 +175,11 @@ class FolderItemsController(
         filters = (filters or {}).copy()
         filters["user_id"] = dm_filters.EQ(user_id)
         return super().filter(filters=filters, **kwargs)
+
+
+class ServiceController(ra_controllers.BaseResourceControllerPaginated):
+    __resource__ = ra_resources.ResourceByRAModel(
+        model_class=models.Service,
+        hidden_fields=[],
+        convert_underscore=False,
+    )
