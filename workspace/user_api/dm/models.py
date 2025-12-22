@@ -109,3 +109,21 @@ class FolderItem(
 
 class FolderItemRAFix(FolderItem):
     pass
+
+
+class Service(
+    models.ModelWithUUID,
+    models.ModelWithRequiredNameDesc,
+    models.ModelWithTimestamp,
+    orm.SQLStorableMixin,
+):
+    __tablename__ = "catalog_services"
+
+    service_url = properties.property(
+        types.Url(),
+        required=True,
+    )
+    icon = properties.property(
+        types.AllowNone(types.Url()),
+        default=None,
+    )
