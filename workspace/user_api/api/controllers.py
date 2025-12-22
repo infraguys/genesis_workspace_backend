@@ -15,6 +15,7 @@
 #    under the License.
 
 import datetime
+import uuid as sys_uuid
 
 from restalchemy.api import actions as ra_actions
 from restalchemy.api import controllers as ra_controllers
@@ -22,6 +23,7 @@ from restalchemy.api import resources as ra_resources
 from restalchemy.common import exceptions as ra_exc
 from restalchemy.dm import filters as dm_filters
 
+from workspace.user_api import exceptions as user_api_exceptions
 from workspace.user_api.api import versions
 from workspace.user_api.dm import models
 
@@ -51,10 +53,23 @@ class FolderController(
         convert_underscore=False,
     )
 
-    def create(self, **kwargs):
+    def _check_system_type(self, change_uuid, user_id):
+        for folder in self.model.objects.get_all(
+            filters={
+                "user_id": dm_filters.EQ(user_id),
+                "system_type": dm_filters.EQ(models.SystemFolderType.ALL),
+                "uuid": dm_filters.NE(change_uuid),
+            }
+        ):
+            raise user_api_exceptions.OnlyOneAllFolderPerUserError()
+
+    def create(self, uuid=None, system_type=None, **kwargs):
         user_id = self._get_user_id()
         kwargs["user_id"] = user_id
-        return super().create(**kwargs)
+        if system_type == models.SystemFolderType.ALL:
+            uuid = uuid or sys_uuid.uuid4()
+            self._check_system_type(uuid, user_id)
+        return super().create(uuid=uuid, system_type=system_type, **kwargs)
 
     def get(self, uuid):
         user_id = self._get_user_id()
@@ -77,6 +92,10 @@ class FolderController(
 
     def update(self, uuid, **kwargs):
         dm = self.get(uuid=uuid)
+        system_type = kwargs.get("system_type", dm.system_type)
+        # Check for system type conflict before updating
+        if system_type == models.SystemFolderType.ALL:
+            self._check_system_type(uuid, self._get_user_id())
         dm.update_dm(values=kwargs)
         dm.update()
         return dm
