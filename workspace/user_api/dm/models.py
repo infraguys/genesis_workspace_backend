@@ -105,3 +105,7 @@ class FolderItem(
                 "user_id": dm_filters.EQ(self.user_id),
             },
         )
+
+
+class FolderItemRAFix(FolderItem):
+    pass

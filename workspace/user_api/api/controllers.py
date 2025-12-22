@@ -139,3 +139,20 @@ class FolderItemController(
         resource.pinned_at = None
         resource.save()
         return resource
+
+
+class FolderItemsController(
+    UserScopedMixin,
+    ra_controllers.BaseResourceControllerPaginated,
+):
+    __resource__ = ra_resources.ResourceByModelWithCustomProps(
+        model_class=models.FolderItemRAFix,
+        hidden_fields=["folder", "user_id"],
+        convert_underscore=False,
+    )
+
+    def filter(self, filters, **kwargs):
+        user_id = self._get_user_id()
+        filters = (filters or {}).copy()
+        filters["user_id"] = dm_filters.EQ(user_id)
+        return super().filter(filters=filters, **kwargs)

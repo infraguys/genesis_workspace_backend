@@ -55,6 +55,13 @@ class FolderRoute(routes.Route):
     items = routes.route(FolderItemRoute, resource_route=True)
 
 
+class FolderItemsRoute(routes.Route):
+    __controller__ = controllers.FolderItemsController
+    __allow_methods__ = [
+        routes.FILTER,
+    ]
+
+
 class ApiEndpointRoute(routes.Route):
     """Handler for /v1.0/ endpoint"""
 
@@ -63,3 +70,6 @@ class ApiEndpointRoute(routes.Route):
 
     # route to /v1.0/folders/[<uuid>]
     folders = routes.route(FolderRoute)
+
+    # route to /v1.0/folder_items/[<uuid>]
+    folder_items = routes.route(FolderItemsRoute)
