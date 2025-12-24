@@ -27,7 +27,8 @@ class ZulipClient(common.RESTClientMixIn):
     via the `json/users/me` endpoint.
     """
 
-    ME_PATH = "json/users/me"
+    ME_PATH_AUTH = "api/v1/users/me"
+    ME_PATH_COOKIE = "json/users/me"
 
     def __init__(self, endpoint: str, timeout: int = 5):
         super().__init__()
@@ -43,7 +44,9 @@ class ZulipClient(common.RESTClientMixIn):
                         authentication and cookies.
         :return: Parsed JSON response as a dictionary.
         """
-        url = self._build_resource_uri([self.ME_PATH])
+        url = self._build_resource_uri([self.ME_PATH_AUTH])
+        if "cookie" in headers:
+            url = self._build_resource_uri([self.ME_PATH_COOKIE])
         response = self._client.get(url, headers=headers)
         return response.json()
 
