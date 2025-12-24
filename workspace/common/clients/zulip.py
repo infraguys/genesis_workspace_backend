@@ -44,9 +44,9 @@ class ZulipClient(common.RESTClientMixIn):
                         authentication and cookies.
         :return: Parsed JSON response as a dictionary.
         """
-        url = self._build_resource_uri([self.ME_PATH_AUTH])
-        if "cookie" in headers:
-            url = self._build_resource_uri([self.ME_PATH_COOKIE])
+        url = self._build_resource_uri([self.ME_PATH_COOKIE])
+        if "Authorization" in headers:
+            url = self._build_resource_uri([self.ME_PATH_AUTH])
         response = self._client.get(url, headers=headers)
         return response.json()
 
