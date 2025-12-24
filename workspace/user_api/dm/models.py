@@ -37,7 +37,7 @@ class Folder(
     __tablename__ = "folders"
 
     title = properties.property(
-        types.String(min_length=3, max_length=64),
+        types.String(min_length=1, max_length=64),
         required=True,
     )
     user_id = properties.property(
