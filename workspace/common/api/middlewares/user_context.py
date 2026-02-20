@@ -6,7 +6,6 @@ from workspace.common.clients import zulip as zulip_client
 
 
 class UserContext(common_contexts.Context):
-
     def __init__(self, user_id, **kwargs):
         # Initialize base context (DB engine, etc.)
         super().__init__(**kwargs)
@@ -19,7 +18,6 @@ class UserContext(common_contexts.Context):
 
 
 class UserContextMiddleware(ra_middlewares.Middleware):
-
     EXCLUDE_PATHS = [
         "/",
         "/v1/",
@@ -36,9 +34,7 @@ class UserContextMiddleware(ra_middlewares.Middleware):
             return None
 
         # Build Zulip endpoint on the same domain as the incoming request
-        base_url = (
-            f"{req.headers['X-Forwarded-Proto']}://{req.headers['Host']}"
-        )
+        base_url = f"{req.headers['X-Forwarded-Proto']}://{req.headers['Host']}"
         client = zulip_client.ZulipClient(endpoint=base_url, timeout=3)
 
         headers = {}

@@ -35,7 +35,6 @@ class ApiEndpointController(ra_controllers.RoutesListController):
 
 
 class UserScopedMixin:
-
     def _get_user_id(self):
         ctx = self.get_context()
         user_id = getattr(ctx, "user_id", None) if ctx is not None else None
@@ -44,9 +43,7 @@ class UserScopedMixin:
         return user_id
 
 
-class FolderController(
-    UserScopedMixin, ra_controllers.BaseResourceControllerPaginated
-):
+class FolderController(UserScopedMixin, ra_controllers.BaseResourceControllerPaginated):
     __resource__ = ra_resources.ResourceByRAModel(
         model_class=models.Folder,
         hidden_fields=["user_id"],
